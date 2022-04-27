@@ -48,8 +48,9 @@ def do_discover(client: MongoClient, config: Dict):
     """
     streams = []
 
-    if config['database'] not in get_databases(client, config):
-        raise NoReadPrivilegeException(config['user'], config['database'])
+    if config['user'] != '':
+        if config['database'] not in get_databases(client, config):
+            raise NoReadPrivilegeException(config['user'], config['database'])
 
     database = client[config['database']]
 
@@ -278,9 +279,13 @@ def get_connection_string(config: Dict):
 
     port = "" if srv else f":{int(config['port'])}"
 
-    connection_string = f'{"mongodb+srv" if srv else "mongodb"}://{config["user"]}:' \
-                        f'{config["password"]}@{config["host"]}' \
-                        f'{port}/{config["database"]}?{query_string}'
+    if config["user"] == '' and config["password"] == '':
+        connection_string = f'{"mongodb+srv" if srv else "mongodb"}://{config["host"]}' \
+                            f'{port}/{config["database"]}?{query_string}'
+    else:
+        connection_string = f'{"mongodb+srv" if srv else "mongodb"}://{config["user"]}:' \
+                            f'{config["password"]}@{config["host"]}' \
+                            f'{port}/{config["database"]}?{query_string}'
 
     return connection_string
 
